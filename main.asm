@@ -8,9 +8,20 @@ default rel
 extern ExitProcess
 global _start
 
+section .data
+    ; msg is a label
+    ; db = Data Bytes
+    ; saves the ASCII number equivalent of this msg into memory, retrievable later by its label
+    ; 10 is ASCII for a newline
+    msg: db "Hello, world!", 10
+
+    ; Define an assemble-time constant, which is calculated during compilation
+    ; Calculate len = string length.  subtract the address of the start of the string from the current position ($)
+    .len: equ $ - msg
+
 section .text
 _start:
-    ; your original idea: push args, call function
+    ; push args, call function
     push 2         ; slope
     push 4         ; y-intercept
     push 5         ; x
