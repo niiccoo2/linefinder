@@ -1,0 +1,1 @@
+This is a simple program to find stuff about lines and learn assembly!
