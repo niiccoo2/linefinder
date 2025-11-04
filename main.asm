@@ -24,13 +24,44 @@ section .text
 main:
     sub rsp, 32
 
-    mov rax, 0 ; init rax as 0 for debug
+    mov rax, 0 ; init rax as 0. rax is the value we are passing to the function
+    mov rbx, 0 ; iterator to keep track of how many times we have gone tru loop
+    mov r15, 4 ; number of times to go tru loop
+
+
+    .loop
+        call find_y ; send output to rax
+        call print ; print rax
+        add rbx, 1 ; add one to iterator
+        cmp rbx, r15
+        jl .loop ; restart if not at stop
 
     push 2 ; slope
     push 3 ; intercept
     push 2 ; x
     call find_y ; should send output to rax
 
+    call print ; think this prints rax
+
+    xor ecx, ecx
+    call ExitProcess
+
+; y = slope * x + intercept
+find_y:
+    ; After CALL, stack top = return address, then x, intercept, slope.
+    pop  r13       ; save return address
+    pop  r10        ; x
+    pop  r11        ; intercept
+    pop  r12       ; slope
+
+    imul r10, r12   ; r10 = x * slope
+    add  r10, r11    ; r10 += intercept
+    mov  rax, r10   ; return y in RAX
+
+    push r13       ; restore return address
+    ret
+
+print: ; right now this can only print one digit, need to read up on how to make it do multiple digits
     ; Convert integer 7 -> ASCII '7'
     add al, '0'
     mov [num], al
@@ -51,21 +82,3 @@ main:
     lea rdx, [rel newline]
     mov r8d, 2
     call WriteFile
-
-    xor ecx, ecx
-    call ExitProcess
-
-; y = slope * x + intercept
-find_y:
-    ; After CALL, stack top = return address, then x, intercept, slope.
-    pop  r13       ; save return address
-    pop  r10        ; x
-    pop  r11        ; intercept
-    pop  r12       ; slope
-
-    imul r10, r12   ; r10 = x * slope
-    add  r10, r11    ; r10 += intercept
-    mov  rax, r10   ; return y in RAX
-
-    push r13       ; restore return address
-    ret
