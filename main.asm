@@ -24,24 +24,26 @@ section .text
 main:
     sub rsp, 32
 
-    mov rax, 0 ; init rax as 0. rax is the value we are passing to the function
     mov rbx, 0 ; iterator to keep track of how many times we have gone tru loop
+               ; ^ is also x
     mov r15, 4 ; number of times to go tru loop
 
 
-    .loop
+    .loop:
+        push 2 ; slope
+        push 3 ; intercept
+        push rbx ; x
+        
         call find_y ; send output to rax
         call print ; print rax
         add rbx, 1 ; add one to iterator
         cmp rbx, r15
         jl .loop ; restart if not at stop
 
-    push 2 ; slope
-    push 3 ; intercept
-    push 2 ; x
-    call find_y ; should send output to rax
 
-    call print ; think this prints rax
+    ; call find_y ; should send output to rax
+
+    ; call print ; think this prints rax
 
     xor ecx, ecx
     call ExitProcess
