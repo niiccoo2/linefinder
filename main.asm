@@ -63,24 +63,36 @@ find_y:
     push r13       ; restore return address
     ret
 
-print: ; right now this can only print one digit, need to read up on how to make it do multiple digits
-    ; Convert integer 7 -> ASCII '7'
-    add al, '0'
-    mov [num], al
+print: ; this can only print one digit right now
+    ; rax holds the integer
+    add     al, '0'
+    mov     [num], al
 
-    ; Get handle to stdout
-    mov ecx, STD_OUTPUT_HANDLE
-    call GetStdHandle
+    ; Reserve shadow space once for all the calls we make here.
+    sub     rsp, 40h              ; 32B shadow + keep 16B alignment
 
-    ; WriteFile(hOut, num, 1, &bytes_written, NULL)
-    mov rcx, rax
-    lea rdx, [rel num]
-    mov r8d, 1
-    lea r9, [rel bytes_written]
-    mov qword [rsp+20h], 0
-    call WriteFile
+    ; GetStdHandle(STD_OUTPUT_HANDLE)
+    mov     ecx, -11              ; STD_OUTPUT_HANDLE
+    call    GetStdHandle
 
-    ; Write newline
-    lea rdx, [rel newline]
-    mov r8d, 2
-    call WriteFile
+    ; Save handle in a VOLATILE temp (don’t use rbx/r15 here)
+    mov     r10, rax
+
+    ; WriteFile(h, &num, 1, &bytes_written, NULL)
+    mov     rcx, r10              ; hFile
+    lea     rdx, [rel num]
+    mov     r8d, 1
+    lea     r9,  [rel bytes_written]
+    mov     qword [rsp+20h], 0    ; 5th arg (LPOVERLAPPED) = NULL
+    call    WriteFile
+
+    ; WriteFile(h, "\r\n", 2, &bytes_written, NULL)
+    mov     rcx, r10              ; <-- reload handle (RCX is volatile)
+    lea     rdx, [rel newline]
+    mov     r8d, 2
+    lea     r9,  [rel bytes_written]
+    mov     qword [rsp+20h], 0
+    call    WriteFile
+
+    add     rsp, 40h
+    ret
